@@ -1,9 +1,9 @@
-from data import Data, MockData
 from docplex.mp.model import Model
+
+from data import Data, MockData
 
 
 class Formulacao1:
-
     def __init__(self, data: Data):
         self.data = data
         self.model = Model()

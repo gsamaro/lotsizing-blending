@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict
-from numpy import ndarray
+
 import numpy as np
+from numpy import ndarray
 
 
 class ReadData(ABC):
@@ -44,7 +45,7 @@ class MockData(Data):
         self.ub = np.array([[0.3, 0], [0.7, 0], [0.2, 0.5], [0.1, 0.8]])
         self.lb = np.array([[0.3, 0], [0.5, 0], [0.0, 0.2], [0.1, 0.8]])
         self.demand_end = np.array([[1], [1]])
-        self.sum_demand_end = np.array([[[1]],[[1]]])
+        self.sum_demand_end = np.array([[[1]], [[1]]])
         self.holding_cost_end = np.full(
             shape=(self.END_PRODUCTS.shape[0], self.PERIODS.shape[0]), fill_value=1
         )
@@ -72,6 +73,7 @@ class MockData(Data):
         self.production_cost_ingredient = np.full(
             shape=(self.INGREDIENTS.shape[0], self.PERIODS.shape[0]), fill_value=0
         )
+
 
 if __name__ == "__main__":
     MockData("mock")
