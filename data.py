@@ -48,9 +48,7 @@ class MockData(Data):
         sum_demand_product = []
         for k in self.END_PRODUCTS:
             sum_demand_product.append(
-                np.array(
-                    list(self.demand_end[k][t:].sum() for t in self.PERIODS)
-                )
+                np.array(list(self.demand_end[k][t:].sum() for t in self.PERIODS))
             )
         self.sum_demand_end = np.array(sum_demand_product).reshape(
             self.END_PRODUCTS.shape[0], self.PERIODS.shape[0], 1
