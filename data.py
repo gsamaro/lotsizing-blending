@@ -3,6 +3,7 @@ from typing import Any, Dict
 import numpy as np
 from numpy import ndarray
 
+from constants import *
 from read_file import ReadData
 
 
@@ -26,11 +27,13 @@ class Data:
     production_cost_ingredient: ndarray[(Any, Any), float]
     file_to_read: str
 
-    def __init__(self, file_to_read: str):
+    def __init__(self, file_to_read: str, capacity_multiplier="N"):
         df = ReadData(file_to_read).get_df()
         self.file_to_read = file_to_read
 
-        self.END_PRODUCTS = np.arange(1)  # Original instances are single end product
+        self.END_PRODUCTS = np.arange(
+            DEFAULT_SINGLE_PRODUCTS
+        )  # Original instances are single end product
         self.INGREDIENTS = np.arange(int(df.iloc[0, 1]))
         self.PERIODS = np.arange(int(df.iloc[0, 2]))
         inicio = 1
@@ -75,17 +78,12 @@ class Data:
             (self.INGREDIENTS.shape[0], self.END_PRODUCTS.shape[0]),
             1 / self.INGREDIENTS.shape[0],
         )
-        self.capacity_end = (
-            np.array(
-                [
-                    (
-                        self.production_time_end * self.demand_end + self.setup_time_end
-                    ).sum()
-                    / self.PERIODS.shape[0]
-                ]
-            )
-            * 2
-        )
+        self.capacity_end = np.array(
+            [
+                (self.production_time_end * self.demand_end + self.setup_time_end).sum()
+                / self.PERIODS.shape[0]
+            ]
+        ) * CAPACITY_MULTIPLIER.get(capacity_multiplier, 0)
 
 
 class DataMultipleProducts(Data):
