@@ -121,8 +121,7 @@ class Formulacao1:
     def setup_end_products_constraint(self):
         self.model.add_constraints(
             self.end_products[k, t]
-            <= self.data.sum_demand_end[k, t, 0]
-            * self.setup_end_products[k, t]
+            <= self.data.sum_demand_end[k, t, 0] * self.setup_end_products[k, t]
             for k in self.data.END_PRODUCTS
             for t in self.data.PERIODS
         )
@@ -161,8 +160,7 @@ class Formulacao1:
             self.ingredients[i, t]
             <= self.model.sum(self.data.ub[i, k] for k in self.data.END_PRODUCTS)
             * self.model.sum(
-                self.data.sum_demand_end[k, t, 0]
-                for k in self.data.END_PRODUCTS
+                self.data.sum_demand_end[k, t, 0] for k in self.data.END_PRODUCTS
             )
             for i in self.data.INGREDIENTS
             for t in self.data.PERIODS

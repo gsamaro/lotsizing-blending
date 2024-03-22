@@ -12,6 +12,3 @@ source phd2/bin/activate
 
 cd $PBS_O_WORKDIR
 mpirun python -m mpi4py.futures main.py
-
-
-
