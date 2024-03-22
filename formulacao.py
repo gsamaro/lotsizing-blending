@@ -162,6 +162,7 @@ class Formulacao1:
             * self.model.sum(
                 self.data.sum_demand_end[k, t, 0] for k in self.data.END_PRODUCTS
             )
+            * self.setup_ingredients[i, t]
             for i in self.data.INGREDIENTS
             for t in self.data.PERIODS
         )
