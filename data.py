@@ -30,7 +30,7 @@ class Data(ReadData):
         df = ReadData(file_to_read).get_df()
         self.file_to_read = file_to_read
 
-        self.END_PRODUCTS = np.arange(int(df.iloc[0, 0]))
+        self.END_PRODUCTS = np.arange(1)  # Original instances are single end product
         self.INGREDIENTS = np.arange(int(df.iloc[0, 1]))
         self.PERIODS = np.arange(int(df.iloc[0, 2]))
         inicio = 1
@@ -64,6 +64,28 @@ class Data(ReadData):
         )
         inicio, fim = fim, fim + self.PERIODS.shape[0]
         self.demand_end = np.array(df.iloc[inicio:fim, 0].astype(float), dtype=int)
+        self.sum_demand_end = np.array(
+            list(self.demand_end[t:].sum() for t in self.PERIODS)
+        ).reshape(self.END_PRODUCTS.shape[0], self.PERIODS.shape[0], 1)
+
+
+class DataMultipleProducts(Data):
+
+    def __init__(self, file_to_read: str):
+        super().__init__(file_to_read)
+        self._original_demand_end = self.demand_end
+        self.demand_end = np.repeat(
+            self._original_demand_end[:, np.newaxis], self.END_PRODUCTS.shape[0], axis=1
+        ).T
+        self._original_sum_demanda_product = self.sum_demand_end
+        sum_demand_product = []
+        for k in self.END_PRODUCTS:
+            sum_demand_product.append(
+                np.array(list(self.demand_end[k][t:].sum() for t in self.PERIODS))
+            )
+        self.sum_demand_end = np.array(sum_demand_product).reshape(
+            self.END_PRODUCTS.shape[0], self.PERIODS.shape[0], 1
+        )
 
 
 class MockData(Data):
@@ -113,5 +135,5 @@ class MockData(Data):
 
 
 if __name__ == "__main__":
-    data = Data("2HHH1.DAT.dat")
+    data = DataMultipleProducts("2HHH1.DAT.dat")
     pass
