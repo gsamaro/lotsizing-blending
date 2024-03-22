@@ -38,7 +38,10 @@ class Data:
         self.PERIODS = np.arange(int(df.iloc[0, 2]))
         inicio = 1
         fim = inicio + 1
-        # self.capacity_end = np.array(df.iloc[inicio:fim, 0].astype(float), dtype=int)
+        self.capacity_end = (
+            np.array(df.iloc[inicio:fim, 0].astype(float), dtype=int)
+            * CAPACITY_MULTIPLIER[capacity_multiplier]
+        )
         inicio, fim = fim, fim + self.END_PRODUCTS.shape[0]
         self.production_time_end = np.array(
             df.iloc[inicio:fim, 0].astype(float),
@@ -78,18 +81,12 @@ class Data:
             (self.INGREDIENTS.shape[0], self.END_PRODUCTS.shape[0]),
             1 / self.INGREDIENTS.shape[0],
         )
-        self.capacity_end = np.array(
-            [
-                (self.production_time_end * self.demand_end + self.setup_time_end).sum()
-                / self.PERIODS.shape[0]
-            ]
-        ) * CAPACITY_MULTIPLIER.get(capacity_multiplier, 0)
 
 
 class DataMultipleProducts(Data):
 
-    def __init__(self, file_to_read: str):
-        super().__init__(file_to_read)
+    def __init__(self, file_to_read: str, capacity_multiplier):
+        super().__init__(file_to_read, capacity_multiplier)
         self._original_demand_end = self.demand_end
         self.demand_end = np.repeat(
             self._original_demand_end[:, np.newaxis], self.END_PRODUCTS.shape[0], axis=1
