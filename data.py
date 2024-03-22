@@ -1,14 +1,9 @@
-from abc import ABC, abstractmethod
 from typing import Any, Dict
 
 import numpy as np
 from numpy import ndarray
 
-
-class ReadData(ABC):
-    @abstractmethod
-    def __init__(self, file_to_read: str):
-        pass
+from read_file import ReadData
 
 
 class Data(ReadData):
@@ -32,8 +27,43 @@ class Data(ReadData):
     file_to_read: str
 
     def __init__(self, file_to_read: str):
+        df = ReadData(file_to_read).get_df()
         self.file_to_read = file_to_read
-        pass
+
+        self.END_PRODUCTS = np.arange(int(df.iloc[0, 0]))
+        self.INGREDIENTS = np.arange(int(df.iloc[0, 1]))
+        self.PERIODS = np.arange(int(df.iloc[0, 2]))
+        inicio = 1
+        fim = inicio + 1
+        self.capacity_end = np.array(df.iloc[inicio:fim, 0].astype(float), dtype=int)
+        inicio, fim = fim, fim + self.END_PRODUCTS.shape[0]
+        self.production_time_end = np.array(
+            df.iloc[inicio:fim, 0].astype(float),
+        )
+        self.holding_cost_end = np.array(
+            df.iloc[inicio:fim, 1].astype(float),
+        )
+        self.setup_time_end = np.array(
+            df.iloc[inicio:fim, 2].astype(float),
+        )
+        self.setup_cost_end = np.array(
+            df.iloc[inicio:fim, 3].astype(float),
+        )
+        self.production_cost_end = np.array(
+            df.iloc[inicio:fim, 4].astype(float),
+        )
+        inicio, fim = fim, fim + self.INGREDIENTS.shape[0]
+        self.holding_cost_ingredient = np.array(
+            df.iloc[inicio:fim, 0].astype(float),
+        )
+        self.setup_cost_ingredient = np.array(
+            df.iloc[inicio:fim, 1].astype(float),
+        )
+        self.production_cost_ingredient = np.array(
+            df.iloc[inicio:fim, 2].astype(float),
+        )
+        inicio, fim = fim, fim + self.PERIODS.shape[0]
+        self.demand_end = np.array(df.iloc[inicio:fim, 0].astype(float), dtype=int)
 
 
 class MockData(Data):
@@ -83,4 +113,5 @@ class MockData(Data):
 
 
 if __name__ == "__main__":
-    MockData("mock")
+    data = Data("2HHH1.DAT.dat")
+    pass
