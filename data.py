@@ -39,13 +39,22 @@ class Data(ReadData):
 class MockData(Data):
     def __init__(self, file_to_read: str):
         super().__init__("mock")
-        self.PERIODS = np.arange(1)
+        self.PERIODS = np.arange(2)
         self.END_PRODUCTS = np.arange(2)
         self.INGREDIENTS = np.arange(4)
         self.ub = np.array([[0.3, 0], [0.7, 0], [0.2, 0.5], [0.1, 0.8]])
         self.lb = np.array([[0.3, 0], [0.5, 0], [0.0, 0.2], [0.1, 0.8]])
-        self.demand_end = np.array([[1], [1]])
-        self.sum_demand_end = np.array([[[1]], [[1]]])
+        self.demand_end = np.array([[1, 1], [1, 1]])
+        sum_demand_product = []
+        for k in self.END_PRODUCTS:
+            sum_demand_product.append(
+                np.array(
+                    list(self.demand_end[k][t:].sum() for t in self.PERIODS)
+                )
+            )
+        self.sum_demand_end = np.array(sum_demand_product).reshape(
+            self.END_PRODUCTS.shape[0], self.PERIODS.shape[0], 1
+        )
         self.holding_cost_end = np.full(
             shape=(self.END_PRODUCTS.shape[0], self.PERIODS.shape[0]), fill_value=1
         )
