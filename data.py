@@ -6,7 +6,7 @@ from numpy import ndarray
 from read_file import ReadData
 
 
-class Data(ReadData):
+class Data:
     PERIODS: ndarray[Any, int]
     END_PRODUCTS: ndarray[Any, int]
     INGREDIENTS: ndarray[Any, int]
