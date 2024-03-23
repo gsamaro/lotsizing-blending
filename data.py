@@ -1,3 +1,5 @@
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any, Dict
 
 import numpy as np
@@ -7,7 +9,17 @@ from constants import *
 from read_file import ReadData
 
 
-class Data:
+class DataAbstractClass(ABC):
+    instance: str
+    capacity: int
+
+    @abstractmethod
+    def __init__(self, file_to_read: str) -> None:
+        super().__init__()
+
+
+@dataclass
+class Data(DataAbstractClass):
     PERIODS: ndarray[Any, int]
     END_PRODUCTS: ndarray[Any, int]
     INGREDIENTS: ndarray[Any, int]
@@ -26,10 +38,16 @@ class Data:
     setup_cost_ingredient: ndarray[(Any, Any), float]
     production_cost_ingredient: ndarray[(Any, Any), float]
     file_to_read: str
+    instance: str
+    capacity: int
+
+    def __str__(self):
+        return f"{self.instance}"
 
     def __init__(self, file_to_read: str, capacity_multiplier="N"):
         df = ReadData(file_to_read).get_df()
         self.file_to_read = file_to_read
+        self.instance = self.file_to_read.split(".")[0]
 
         self.END_PRODUCTS = np.arange(
             DEFAULT_SINGLE_PRODUCTS
@@ -40,8 +58,9 @@ class Data:
         fim = inicio + 1
         self.capacity_end = (
             np.array(df.iloc[inicio:fim, 0].astype(float), dtype=int)
-            * CAPACITY_MULTIPLIER[capacity_multiplier]
+            * DEFAULT_CAPACITY_MULTIPLIER[capacity_multiplier]
         )
+        self.capacity = self.capacity_end[0]
         inicio, fim = fim, fim + self.END_PRODUCTS.shape[0]
         self.production_time_end = np.array(
             df.iloc[inicio:fim, 0].astype(float),
@@ -84,6 +103,9 @@ class Data:
 
 
 class DataMultipleProducts(Data):
+
+    def __str__(self):
+        return f"{super().__str__()}_prod_{self.END_PRODUCTS.shape[0]}"
 
     def __init__(self, file_to_read: str, capacity_multiplier):
         super().__init__(file_to_read, capacity_multiplier)
