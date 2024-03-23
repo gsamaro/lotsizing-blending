@@ -253,8 +253,9 @@ class Formulacao1:
 
 
 if __name__ == "__main__":
-    data = DataMultipleProducts("2HHH1.DAT.dat")
+    data = DataMultipleProducts("10LLL5.DAT.dat", capacity_multiplier="L")
     f1 = Formulacao1(data)
     print(f1.model.export_as_lp_string())
+    f1.model.set_time_limit(10)
     solution = f1.model.solve()
     f1.model.print_solution()
