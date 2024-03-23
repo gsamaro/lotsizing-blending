@@ -22,8 +22,6 @@ except:
 import gc
 from abc import ABC
 
-from docplex.mp.model import Model
-
 import constants
 
 
@@ -139,11 +137,3 @@ def running_all_instance_with_chosen_capacity(
         path_to_save=Path.resolve(Path(constants.FINAL_PATH) / Path(path_to_save)),
     )
     print(f"Concluído")
-
-
-if __name__ == "__main__":
-    from formulacao import Formulacao1
-
-    running_all_instance_with_chosen_capacity(
-        Formulacao1, path_to_save="formulacao1.xlsx"
-    )
