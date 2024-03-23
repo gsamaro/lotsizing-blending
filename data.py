@@ -110,8 +110,14 @@ class DataMultipleProducts(Data):
     def __str__(self):
         return f"{super().__str__()}_prod_{self.END_PRODUCTS.shape[0]}"
 
-    def __init__(self, file_to_read: str, capacity_multiplier):
+    def __init__(
+        self, file_to_read: str, capacity_multiplier, amount_of_end_products: int
+    ):
         super().__init__(file_to_read, capacity_multiplier)
+        self.END_PRODUCTS = np.arange(amount_of_end_products)
+        self._update_demand()
+
+    def _update_demand(self):
         self._original_demand_end = self.demand_end
         self.demand_end = np.repeat(
             self._original_demand_end[:, np.newaxis], self.END_PRODUCTS.shape[0], axis=1
