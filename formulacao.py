@@ -1,6 +1,6 @@
 from docplex.mp.model import Model
 
-from data import Data, MockData
+from data import Data, DataMultipleProducts, MockData
 
 
 class Formulacao1:
@@ -128,9 +128,9 @@ class Formulacao1:
 
     def capacity_end_products_constraint(self):
         self.model.add_constraints(
-            self.data.setup_time_end[k, t] * self.setup_end_products[k, t]
-            + self.data.production_time_end[k, t] * self.end_products[k, t]
-            <= self.data.capacity_end[k, t]
+            self.data.setup_time_end[k] * self.setup_end_products[k, t]
+            + self.data.production_time_end[k] * self.end_products[k, t]
+            <= self.data.capacity_end[k]
             for k in self.data.END_PRODUCTS
             for t in self.data.PERIODS
         )
@@ -162,6 +162,7 @@ class Formulacao1:
             * self.model.sum(
                 self.data.sum_demand_end[k, t, 0] for k in self.data.END_PRODUCTS
             )
+            * self.setup_ingredients[i, t]
             for i in self.data.INGREDIENTS
             for t in self.data.PERIODS
         )
@@ -196,21 +197,21 @@ class Formulacao1:
 
     def setup_cost_end_products(self):
         return self.model.sum(
-            self.data.setup_cost_end[k, t] * self.setup_end_products[k, t]
+            self.data.setup_cost_end[k] * self.setup_end_products[k, t]
             for k in self.data.END_PRODUCTS
             for t in self.data.PERIODS
         )
 
     def production_cost_end_products(self):
         return self.model.sum(
-            self.data.production_cost_end[k, t] * self.end_products[k, t]
+            self.data.production_cost_end[k] * self.end_products[k, t]
             for k in self.data.END_PRODUCTS
             for t in self.data.PERIODS
         )
 
     def holding_cost_end_products(self):
         return self.model.sum(
-            self.data.holding_cost_end[k, t] * self.inventory_end_products[k, t]
+            self.data.holding_cost_end[k] * self.inventory_end_products[k, t]
             for k in self.data.END_PRODUCTS
             for t in self.data.PERIODS
         )
@@ -224,21 +225,21 @@ class Formulacao1:
 
     def setup_cost_ingredients(self):
         return self.model.sum(
-            self.data.setup_cost_ingredient[i, t] * self.setup_ingredients[i, t]
+            self.data.setup_cost_ingredient[i] * self.setup_ingredients[i, t]
             for i in self.data.INGREDIENTS
             for t in self.data.PERIODS
         )
 
     def production_cost_ingredients(self):
         return self.model.sum(
-            self.data.production_cost_ingredient[i, t] * self.ingredients[i, t]
+            self.data.production_cost_ingredient[i] * self.ingredients[i, t]
             for i in self.data.INGREDIENTS
             for t in self.data.PERIODS
         )
 
     def holding_cost_end_ingredients(self):
         return self.model.sum(
-            self.data.holding_cost_ingredient[i, t] * self.inventory_ingredients[i, t]
+            self.data.holding_cost_ingredient[i] * self.inventory_ingredients[i, t]
             for i in self.data.INGREDIENTS
             for t in self.data.PERIODS
         )
@@ -252,8 +253,9 @@ class Formulacao1:
 
 
 if __name__ == "__main__":
-    data = MockData("F1.dat")
+    data = DataMultipleProducts("10LLL5.DAT.dat", capacity_multiplier="L")
     f1 = Formulacao1(data)
     print(f1.model.export_as_lp_string())
+    f1.model.set_time_limit(10)
     solution = f1.model.solve()
     f1.model.print_solution()
