@@ -46,6 +46,7 @@ def add_new_kpi(kpis: Dict[str, any], result, data: DataAbstractClass) -> dict:
     kpis["Nodes Processed"] = result.solve_details.gap
     kpis["Tempo de Solução"] = result.solve_details.time
     kpis["capacity"] = data.capacity
+    kpis["amount_of_end_products"] = data.amount_of_end_products
     return kpis
 
 
@@ -66,7 +67,6 @@ def solve_optimized_model(
     data = DataMultipleProducts(
         dataset,
         capacity_multiplier=capacity_multiplier,
-        amount_of_end_products=amount_of_end_products,
     )
     f1 = Formulacao(data)
     mdl = f1.model

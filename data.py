@@ -12,6 +12,7 @@ from read_file import ReadData
 class DataAbstractClass(ABC):
     instance: str
     capacity: int
+    amount_of_end_products: int
 
     @abstractmethod
     def __init__(self, file_to_read: str, capacity_multiplier: str) -> None:
@@ -40,6 +41,7 @@ class Data(DataAbstractClass):
     file_to_read: str
     instance: str
     capacity: int
+    amount_of_end_products: int
 
     def __str__(self):
         return f"{self.instance}"
@@ -52,6 +54,7 @@ class Data(DataAbstractClass):
         self.END_PRODUCTS = np.arange(
             DEFAULT_SINGLE_PRODUCTS
         )  # Original instances are single end product
+        self.amount_of_end_products = self.END_PRODUCTS.shape[0]
         self.INGREDIENTS = np.arange(int(df.iloc[0, 1]))
         self.PERIODS = np.arange(int(df.iloc[0, 2]))
         inicio = 1
@@ -122,6 +125,7 @@ class DataMultipleProducts(Data):
         self.sum_demand_end = np.array(sum_demand_product).reshape(
             self.END_PRODUCTS.shape[0], self.PERIODS.shape[0], 1
         )
+        self.amount_of_end_products = self.END_PRODUCTS.shape[0]
 
 
 class MockData(Data):
