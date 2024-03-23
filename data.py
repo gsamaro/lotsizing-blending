@@ -14,7 +14,7 @@ class DataAbstractClass(ABC):
     capacity: int
 
     @abstractmethod
-    def __init__(self, file_to_read: str) -> None:
+    def __init__(self, file_to_read: str, capacity_multiplier: str) -> None:
         super().__init__()
 
 
