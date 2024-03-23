@@ -36,7 +36,9 @@ def print_info(data: DataAbstractClass, status: str) -> None:
         rank = comm.Get_rank()
     else:
         rank = None
-    print(f"Instance = {data.instance} Cap = {data.capacity} {status} Process {rank}")
+    print(
+        f"Instance = {data.instance} Cap = {data.capacity} Produtos {data.amount_of_end_products} {status} Process {rank}"
+    )
 
 
 def add_new_kpi(kpis: Dict[str, any], result, data: DataAbstractClass) -> dict:
@@ -67,6 +69,7 @@ def solve_optimized_model(
     data = DataMultipleProducts(
         dataset,
         capacity_multiplier=capacity_multiplier,
+        amount_of_end_products=amount_of_end_products,
     )
     f1 = Formulacao(data)
     mdl = f1.model
