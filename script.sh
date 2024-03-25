@@ -7,7 +7,7 @@
 #PBS -M g229780@dac.unicamp.br
 
 module load python/3.10.10-gcc-9.4.0
-module load openmpi/4.1.1-intel-2021.3.0
+module load openmpi/4.1.1-gcc-9.4.0
 source phd2/bin/activate
 
 cd $PBS_O_WORKDIR
