@@ -1,8 +1,8 @@
 #PBS -N main
-#PBS -q memlong
+#PBS -q par128
 #PBS -l nodes=1:ppn=128
-#PBS -e outputs/erros_memlong
-#PBS -o outputs/saidas_memlong
+#PBS -e outputs/erros_par128
+#PBS -o outputs/saidas_par128
 #PBS -m abe
 #PBS -M g229780@dac.unicamp.br
 
