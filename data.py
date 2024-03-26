@@ -21,23 +21,23 @@ class DataAbstractClass(ABC):
 
 @dataclass
 class Data(DataAbstractClass):
-    PERIODS: ndarray[Any, int]
-    END_PRODUCTS: ndarray[Any, int]
-    INGREDIENTS: ndarray[Any, int]
-    INGREDIENTS_OF_PRODUCT: Dict[int, int]
-    ub: ndarray[(Any, Any), float]
-    lb: ndarray[(Any, Any), float]
-    demand_end: ndarray[(Any, Any), float]
-    sum_demand_end: ndarray[(Any, Any), float]
-    holding_cost_end: ndarray[(Any, Any), float]
-    setup_cost_end: ndarray[(Any, Any), float]
-    production_cost_end: ndarray[(Any, Any), float]
-    production_time_end: ndarray[(Any, Any), float]
-    setup_time_end: ndarray[(Any, Any), float]
-    capacity_end: ndarray[(Any, Any), float]
-    holding_cost_ingredient: ndarray[(Any, Any), float]
-    setup_cost_ingredient: ndarray[(Any, Any), float]
-    production_cost_ingredient: ndarray[(Any, Any), float]
+    PERIODS: ndarray
+    END_PRODUCTS: ndarray
+    INGREDIENTS: ndarray
+    INGREDIENTS_OF_PRODUCT: Dict
+    ub: ndarray
+    lb: ndarray
+    demand_end: ndarray
+    sum_demand_end: ndarray
+    holding_cost_end: ndarray
+    setup_cost_end: ndarray
+    production_cost_end: ndarray
+    production_time_end: ndarray
+    setup_time_end: ndarray
+    capacity_end: ndarray
+    holding_cost_ingredient: ndarray
+    setup_cost_ingredient: ndarray
+    production_cost_ingredient: ndarray
     file_to_read: str
     instance: str
     capacity: int
@@ -56,7 +56,7 @@ class Data(DataAbstractClass):
         )  # Original instances are single end product
         self.amount_of_end_products = self.END_PRODUCTS.shape[0]
         self.INGREDIENTS = np.arange(int(df.iloc[0, 1]))
-        self.PERIODS = np.arange(int(df.iloc[0, 2]))
+        self.PERIODS = np.arange(2)
         inicio = 1
         fim = inicio + 1
         self.capacity_end = (
