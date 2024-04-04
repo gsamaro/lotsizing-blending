@@ -56,6 +56,12 @@ def add_new_kpi(kpis: Dict[str, any], result, data: DataAbstractClass) -> dict:
     return kpis
 
 
+def get_value_df(mdl, variable, value_name, key_columns):
+    return mdl.solution.get_value_df(
+        variable, value_column_name=value_name, key_column_names=key_columns
+    ).melt(id_vars=key_columns, value_vars=[value_name])
+
+
 def get_and_save_results(path_to_read: str, path_to_save: Path) -> None:
     list_files = []
     for file in Path(path_to_read).glob("*"):
@@ -69,7 +75,7 @@ def solve_optimized_model(
     Formulacao: FormulacaoType,
     amount_of_end_products,
     capacity_multiplier,
-) -> None:
+):
     data = DataMultipleProducts(
         dataset,
         capacity_multiplier=capacity_multiplier,
@@ -79,6 +85,56 @@ def solve_optimized_model(
     mdl = f1.model
     mdl.parameters.timelimit = constants.TIMELIMIT
     result = mdl.solve()
+    produto_periodo = ["produto", "periodo"]
+    ingrediente_produto_periodo = ["ingrediente"] + produto_periodo
+    ingrediente_periodo = ["ingrediente", "periodo"]
+    end_products = get_value_df(
+        mdl, f1.end_products, value_name="end_products", key_columns=produto_periodo
+    )
+    setup_end_products = get_value_df(
+        mdl,
+        f1.setup_end_products,
+        value_name="setup_end_products",
+        key_columns=produto_periodo,
+    )
+    inventory_end_products = get_value_df(
+        mdl,
+        f1.inventory_end_products,
+        value_name="inventory_end_products",
+        key_columns=produto_periodo,
+    )
+    ingredient_proportion = get_value_df(
+        mdl,
+        f1.ingredient_proportion,
+        value_name="ingredient_proportion",
+        key_columns=ingrediente_produto_periodo,
+    )
+    ingredients = get_value_df(
+        mdl, f1.ingredients, value_name="ingredients", key_columns=ingrediente_periodo
+    )
+    setup_ingredients = get_value_df(
+        mdl,
+        f1.setup_ingredients,
+        value_name="setup_ingredients",
+        key_columns=ingrediente_periodo,
+    )
+    inventory_ingredients = get_value_df(
+        mdl,
+        f1.inventory_ingredients,
+        value_name="inventory_ingredients",
+        key_columns=ingrediente_periodo,
+    )
+    var_results = pd.concat(
+        (
+            end_products,
+            setup_end_products,
+            inventory_end_products,
+            ingredient_proportion,
+            ingredients,
+            setup_ingredients,
+            inventory_ingredients,
+        )
+    )
 
     if result == None:
         print_info(data, "infactível")
@@ -104,6 +160,7 @@ def solve_optimized_model(
 
     print_info(data, "concluído")
     gc.collect()
+    return var_results
 
 
 def running_all_instance_with_chosen_capacity(
@@ -123,8 +180,7 @@ def running_all_instance_with_chosen_capacity(
                         capacity_multiplier=capmult,
                     )
 
-                    if best_result:
-                        final_results.append(best_result)
+                    final_results.append(best_result)
     else:
         with MPIPoolExecutor() as executor:
             futures = executor.starmap(
@@ -138,6 +194,10 @@ def running_all_instance_with_chosen_capacity(
             )
             final_results.append(futures)
             executor.shutdown(wait=True)
+
+    pd.concat(final_results).to_excel(
+        Path(Path(constants.FINAL_PATH) / Path("variaveis.xlsx"))
+    )
 
     get_and_save_results(
         path_to_read=constants.OTIMIZADOS_INDIVIDUAIS_PATH,
