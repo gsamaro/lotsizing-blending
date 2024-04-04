@@ -34,10 +34,14 @@ def print_info(data: DataAbstractClass, status: str) -> None:
     if MPI_BOOL:
         comm = MPI.COMM_WORLD
         rank = comm.Get_rank()
+        size = comm.Get_size()
+        name = comm.Get_processor_name()
     else:
         rank = None
+        size = None
+        name = "localhost"
     print(
-        f"Instance = {data.instance} Cap = {data.capacity} Produtos {data.amount_of_end_products} {status} Process {rank}"
+        f"Instance = {data.instance} Cap = {data.capacity} Produtos {data.amount_of_end_products} {status} Process {rank} of {size} on {name}"
     )
 
 
