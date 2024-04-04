@@ -17,6 +17,8 @@ try:
     MPI_BOOL = True
 except:
     print("mpi4py not running")
+    from multiprocessing import Pool
+
     MPI_BOOL = False
 
 import gc
@@ -169,18 +171,18 @@ def running_all_instance_with_chosen_capacity(
     final_results = []
 
     if not MPI_BOOL:
-        for dataset in constants.INSTANCES:
-            for end_products in constants.END_PRODUCTS:
-                for capmult in constants.DEFAULT_CAPACITY_MULTIPLIER.keys():
+        with Pool() as executor:
+            futures = executor.starmap(
+                solve_optimized_model,
+                (
+                    (dataset, Formulacao, end_products, capmult)
+                    for dataset in constants.INSTANCES
+                    for end_products in constants.END_PRODUCTS
+                    for capmult in constants.DEFAULT_CAPACITY_MULTIPLIER.keys()
+                ),
+            )
+            final_results.append(futures)
 
-                    best_result = solve_optimized_model(
-                        dataset,
-                        Formulacao,
-                        amount_of_end_products=end_products,
-                        capacity_multiplier=capmult,
-                    )
-
-                    final_results.append(best_result)
     else:
         with MPIPoolExecutor() as executor:
             futures = executor.starmap(
@@ -195,7 +197,7 @@ def running_all_instance_with_chosen_capacity(
             final_results.append(futures)
             executor.shutdown(wait=True)
 
-    pd.concat(final_results).to_excel(
+    pd.concat(final_results[0]).to_excel(
         Path(Path(constants.FINAL_PATH) / Path("variaveis.xlsx"))
     )
 
