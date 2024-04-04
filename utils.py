@@ -2,6 +2,7 @@ import os
 import re
 import types
 from itertools import chain
+from multiprocessing import Pool
 from pathlib import Path
 from typing import Dict, List
 
@@ -17,8 +18,6 @@ try:
     MPI_BOOL = False
 except:
     print("mpi4py not running")
-    from multiprocessing import Pool
-
     MPI_BOOL = False
 
 import gc
