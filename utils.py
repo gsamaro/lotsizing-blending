@@ -136,6 +136,7 @@ def solve_optimized_model(
             inventory_ingredients,
         )
     )
+    var_results["amount_of_end_products"] = data.amount_of_end_products
 
     if result == None:
         print_info(data, "infactível")
