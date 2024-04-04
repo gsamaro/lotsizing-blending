@@ -14,7 +14,7 @@ try:
     from mpi4py import MPI
     from mpi4py.futures import MPIPoolExecutor
 
-    MPI_BOOL = True
+    MPI_BOOL = False
 except:
     print("mpi4py not running")
     from multiprocessing import Pool
