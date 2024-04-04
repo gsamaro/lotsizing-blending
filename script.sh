@@ -6,11 +6,11 @@
 #PBS -m abe
 #PBS -M g229780@dac.unicamp.br
 
-cd $PBS_O_WORKDIR
-
-module load python/3.10.10-gcc-9.4.0
+module load python/3.8.11-gcc-9.4.0
 module load openmpi/4.1.1-gcc-9.4.0
 
 source phd3/bin/activate
+
+cd $PBS_O_WORKDIR
 
 mpirun python -m mpi4py.futures main.py
