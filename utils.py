@@ -15,7 +15,7 @@ try:
     from mpi4py import MPI
     from mpi4py.futures import MPIPoolExecutor
 
-    MPI_BOOL = False
+    MPI_BOOL = True
 except:
     print("mpi4py not running")
     MPI_BOOL = False
@@ -36,7 +36,7 @@ def print_info(data: DataAbstractClass, status: str) -> None:
         comm = MPI.COMM_WORLD
         rank = comm.Get_rank()
         size = comm.Get_size()
-        name = comm.Get_processor_name()
+        name = MPI.Get_processor_name()
     else:
         rank = None
         size = None
@@ -84,8 +84,14 @@ def solve_optimized_model(
     )
     f1 = Formulacao(data)
     mdl = f1.model
-    mdl.parameters.timelimit = constants.TIMELIMIT
+    mdl.set_time_limit(constants.TIMELIMIT)
+    mdl.context.cplex_parameters.threads = 1
     result = mdl.solve()
+
+    if result == None:
+        print_info(data, "infactível")
+        return None
+
     produto_periodo = ["produto", "periodo"]
     ingrediente_produto_periodo = ["ingrediente"] + produto_periodo
     ingrediente_periodo = ["ingrediente", "periodo"]
@@ -137,10 +143,6 @@ def solve_optimized_model(
         )
     )
     var_results["amount_of_end_products"] = data.amount_of_end_products
-
-    if result == None:
-        print_info(data, "infactível")
-        return None
 
     kpis = mdl.kpis_as_dict(result, objective_key="objective_function")
     kpis = add_new_kpi(kpis, result, data)
