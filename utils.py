@@ -68,7 +68,9 @@ def get_and_save_results(path_to_read: str, path_to_save: Path) -> None:
     for file in Path(path_to_read).glob("*"):
         list_files.append(pd.read_excel(file))
     df_results_optimized = pd.concat(list_files)
-    df_results_optimized.to_excel(path_to_save, index=False)
+    df_results_optimized.to_excel(
+        Path.resolve(Path(path_to_read) / Path(path_to_save)), index=False
+    )
 
 
 def solve_optimized_model(
@@ -143,6 +145,7 @@ def solve_optimized_model(
         )
     )
     var_results["amount_of_end_products"] = data.amount_of_end_products
+    var_results["instance"] = data.instance
 
     kpis = mdl.kpis_as_dict(result, objective_key="objective_function")
     kpis = add_new_kpi(kpis, result, data)
