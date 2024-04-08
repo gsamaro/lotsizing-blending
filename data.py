@@ -56,7 +56,7 @@ class Data(DataAbstractClass):
         )  # Original instances are single end product
         self.amount_of_end_products = self.END_PRODUCTS.shape[0]
         self.INGREDIENTS = np.arange(int(df.iloc[0, 1]))
-        self.PERIODS = np.arange(2)
+        self.PERIODS = np.arange(int(df.iloc[0, 2]))
         inicio = 1
         fim = inicio + 1
         self.capacity_end = (
