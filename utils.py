@@ -66,10 +66,12 @@ def get_value_df(mdl, variable, value_name, key_columns):
 def get_and_save_results(path_to_read: str, path_to_save: Path) -> None:
     list_files = []
     for file in Path(path_to_read).glob("*"):
-        list_files.append(pd.read_excel(file))
+        list_files.append(pd.read_excel(file), engine="openpyxl")
     df_results_optimized = pd.concat(list_files)
     df_results_optimized.to_excel(
-        Path.resolve(Path(path_to_read) / Path(path_to_save)), index=False
+        Path.resolve(Path(path_to_read) / Path(path_to_save)),
+        index=False,
+        engine="openpyxl",
     )
 
 
@@ -163,7 +165,9 @@ def solve_optimized_model(
     )
 
     df_results_optimized = pd.DataFrame([kpis])
-    df_results_optimized.to_excel(f"{complete_path_to_save}.xlsx", index=False)
+    df_results_optimized.to_excel(
+        f"{complete_path_to_save}.xlsx", index=False, engine="openpyxl"
+    )
 
     print_info(data, "concluído")
     gc.collect()
@@ -203,7 +207,7 @@ def running_all_instance_with_chosen_capacity(
             executor.shutdown(wait=True)
 
     pd.concat(final_results[0]).to_excel(
-        Path(Path(constants.FINAL_PATH) / Path("variaveis.xlsx"))
+        Path(Path(constants.FINAL_PATH) / Path("variaveis.xlsx")), engine="openpyxl"
     )
 
     get_and_save_results(
