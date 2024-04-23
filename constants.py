@@ -3,7 +3,7 @@ DEFAULT_CAPACITY_MULTIPLIER = {"N": 2, "L": 1.3}
 TIMELIMIT = 3600
 OTIMIZADOS_INDIVIDUAIS_PATH = "SOLUTION/INDIVIDUAIS/"
 FINAL_PATH = "SOLUTION/FINAL/"
-END_PRODUCTS = [1, 2]
+END_PRODUCTS = [1, 5, 10]
 INSTANCES = ["2LLL1.DAT.dat"]
 INSTANCES = [f"{i}LLL{j}.DAT.dat" for i in [2, 5, 10] for j in range(1, 11)] + [
     f"{i}HHH{j}.DAT.dat" for i in [2, 5, 10] for j in range(1, 11)
