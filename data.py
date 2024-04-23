@@ -42,6 +42,7 @@ class Data(DataAbstractClass):
     instance: str
     capacity: int
     amount_of_end_products: int
+    capacity_multiplier: str
 
     def __str__(self):
         return f"{self.instance}"
@@ -63,6 +64,7 @@ class Data(DataAbstractClass):
             np.array(df.iloc[inicio:fim, 0].astype(float), dtype=int)
             * DEFAULT_CAPACITY_MULTIPLIER[capacity_multiplier]
         )
+        self.capacity_multiplier = capacity_multiplier
         self.capacity = self.capacity_end[0]
         inicio, fim = fim, fim + self.END_PRODUCTS.shape[0]
         self.production_time_end = np.array(
