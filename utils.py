@@ -50,7 +50,7 @@ def add_new_kpi(kpis: Dict[str, any], result, data: DataAbstractClass) -> dict:
     kpis["Instance"] = data.instance
     kpis["Best Bound"] = result.solve_details.best_bound
     kpis["Gap"] = result.solve_details.gap
-    kpis["Nodes Processed"] = result.solve_details.gap
+    kpis["Nodes Processed"] = result.solve_details.nb_nodes_processed
     kpis["Tempo de Solução"] = result.solve_details.time
     kpis["capacity"] = data.capacity
     kpis["capacity_multiplier"] = data.capacity_multiplier
