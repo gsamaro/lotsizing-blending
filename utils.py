@@ -67,7 +67,10 @@ def get_value_df(mdl, variable, value_name, key_columns):
 def get_and_save_results(path_to_read: str, path_to_save: Path) -> None:
     list_files = []
     for file in Path(path_to_read).glob("*"):
-        list_files.append(pd.read_excel(file), engine="openpyxl")
+        try:
+            list_files.append(pd.read_excel(file, engine="openpyxl"))
+        except:
+            print(f"{file} corrompido")
     df_results_optimized = pd.concat(list_files)
     df_results_optimized.to_excel(
         Path.resolve(Path(path_to_read) / Path(path_to_save)),
@@ -214,6 +217,6 @@ def running_all_instance_with_chosen_capacity(
 
     get_and_save_results(
         path_to_read=constants.OTIMIZADOS_INDIVIDUAIS_PATH,
-        path_to_save=Path.resolve(Path(constants.FINAL_PATH) / Path(path_to_save)),
+        path_to_save=str(Path.resolve(Path(constants.FINAL_PATH) / Path(path_to_save))),
     )
     print(f"Concluído")
