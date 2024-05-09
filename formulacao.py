@@ -4,7 +4,7 @@ from data import Data, DataMultipleProducts, MockData
 
 
 class Formulacao1:
-    def __init__(self, data: Data):
+    def __init__(self, data: DataMultipleProducts):
         self.data = data
         self.model = Model()
         self.build_variables()
@@ -12,6 +12,7 @@ class Formulacao1:
         self.balance_inventory_end_products_constraint()
         self.setup_end_products_constraint()
         self.capacity_end_products_constraint()
+        self.capacity_ingredients_constraint()
         self.balance_inventory_ingredients_constraint()
         self.setup_ingredients_constraint()
         self.upper_ingredients_constraint()
@@ -132,6 +133,15 @@ class Formulacao1:
             + self.data.production_time_end[0] * self.end_products[k, t]
             <= self.data.capacity_end[0]
             for k in self.data.END_PRODUCTS
+            for t in self.data.PERIODS
+        )
+
+    def capacity_ingredients_constraint(self):
+        # todo: add tempo setup ingrediente
+        # todo: add tempo producao ingrediente
+        self.model.add_constraints(
+            self.ingredients[i, t] <= self.data.ingredient_capacity[0]
+            for i in self.data.INGREDIENTS
             for t in self.data.PERIODS
         )
 
@@ -256,7 +266,10 @@ class Formulacao1:
 
 if __name__ == "__main__":
     data = DataMultipleProducts(
-        "2LLL4.DAT.dat", capacity_multiplier="L", amount_of_end_products=4
+        "2LLL4.DAT.dat",
+        capacity_multiplier="L",
+        amount_of_end_products=1,
+        type_cap_ingredients="L",
     )
     f1 = Formulacao1(data)
     print(f1.model.export_as_lp_string())
