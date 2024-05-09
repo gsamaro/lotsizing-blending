@@ -108,16 +108,22 @@ class Data(DataAbstractClass):
 
 
 class DataMultipleProducts(Data):
+    ingredient_capacity: float
 
     def __str__(self):
         return f"{super().__str__()}_prod_{self.END_PRODUCTS.shape[0]}"
 
     def __init__(
-        self, file_to_read: str, capacity_multiplier, amount_of_end_products: int
+        self,
+        file_to_read: str,
+        capacity_multiplier,
+        amount_of_end_products: int,
+        type_cap_ingredients: str,
     ):
         super().__init__(file_to_read, capacity_multiplier)
         self.END_PRODUCTS = np.arange(amount_of_end_products)
         self._update_demand()
+        self._update_ingredient_capacity(str.upper(type_cap_ingredients))
 
     def _update_demand(self):
         self._original_demand_end = self.demand_end
@@ -134,6 +140,21 @@ class DataMultipleProducts(Data):
             self.END_PRODUCTS.shape[0], self.PERIODS.shape[0], 1
         )
         self.amount_of_end_products = self.END_PRODUCTS.shape[0]
+
+    def _update_ingredient_capacity(self, type_cap_ingredients: str):
+        if type_cap_ingredients == "W":
+            self.ingredient_capacity = [np.inf]
+        elif type_cap_ingredients == "L":
+            self.ingredient_capacity = np.max(self.ub * self.demand_end, axis=1)
+        elif type_cap_ingredients == "XL":
+            self.ingredient_capacity = (
+                self.ub
+                * self.demand_end.sum(axis=1).reshape((self.amount_of_end_products, 1))
+            ).flatten()
+        elif type_cap_ingredients == "S":
+            self.ingredient_capacity = np.max(self.lb * self.demand_end, axis=1)
+        else:
+            raise Exception("type_cap_ingredients invalid!")
 
 
 class MockData(Data):
@@ -183,5 +204,10 @@ class MockData(Data):
 
 
 if __name__ == "__main__":
-    data = DataMultipleProducts("2HHH1.DAT.dat")
+    data = DataMultipleProducts(
+        "2HHH1.DAT.dat",
+        amount_of_end_products=2,
+        type_cap_ingredients="W",
+        capacity_multiplier="L",
+    )
     pass
