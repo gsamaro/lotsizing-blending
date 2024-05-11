@@ -13,6 +13,8 @@ class DataAbstractClass(ABC):
     instance: str
     capacity: int
     amount_of_end_products: int
+    type_cap_ingredients: str
+    ingredient_capacity: float
 
     @abstractmethod
     def __init__(self, file_to_read: str, capacity_multiplier: str) -> None:
@@ -51,6 +53,8 @@ class Data(DataAbstractClass):
         df = ReadData(file_to_read).get_df()
         self.file_to_read = file_to_read
         self.instance = self.file_to_read.split(".")[0]
+        self.ingredient_capacity = [np.inf]
+        self.type_cap_ingredients = DEFAULT_TYPE_INGREDIENTS_CAPACITY
 
         self.END_PRODUCTS = np.arange(
             DEFAULT_SINGLE_PRODUCTS
@@ -97,6 +101,9 @@ class Data(DataAbstractClass):
         self.sum_demand_end = np.array(
             list(self.demand_end[t:].sum() for t in self.PERIODS)
         ).reshape(self.END_PRODUCTS.shape[0], self.PERIODS.shape[0], 1)
+        self._define_limits()
+
+    def _define_limits(self):
         self.ub = np.full(
             (self.INGREDIENTS.shape[0], self.END_PRODUCTS.shape[0]),
             1 / self.INGREDIENTS.shape[0],
@@ -108,10 +115,9 @@ class Data(DataAbstractClass):
 
 
 class DataMultipleProducts(Data):
-    ingredient_capacity: float
 
     def __str__(self):
-        return f"{super().__str__()}_prod_{self.END_PRODUCTS.shape[0]}"
+        return f"{super().__str__()}_prod_{self.END_PRODUCTS.shape[0]}_capE_{self.capacity_multiplier}_capI_{self.type_cap_ingredients}"
 
     def __init__(
         self,
@@ -122,7 +128,9 @@ class DataMultipleProducts(Data):
     ):
         super().__init__(file_to_read, capacity_multiplier)
         self.END_PRODUCTS = np.arange(amount_of_end_products)
+        self.type_cap_ingredients = str.upper(type_cap_ingredients)
         self._update_demand()
+        self._define_limits()
         self._update_ingredient_capacity(str.upper(type_cap_ingredients))
 
     def _update_demand(self):
@@ -145,14 +153,18 @@ class DataMultipleProducts(Data):
         if type_cap_ingredients == "W":
             self.ingredient_capacity = [np.inf]
         elif type_cap_ingredients == "L":
-            self.ingredient_capacity = np.max(self.ub * self.demand_end, axis=1)
+            self.ingredient_capacity = np.max(np.dot(self.ub, self.demand_end), axis=1)
         elif type_cap_ingredients == "XL":
             self.ingredient_capacity = (
-                self.ub
-                * self.demand_end.sum(axis=1).reshape((self.amount_of_end_products, 1))
+                np.dot(
+                    self.ub,
+                    self.demand_end.sum(axis=1).reshape(
+                        (self.amount_of_end_products, 1)
+                    ),
+                )
             ).flatten()
         elif type_cap_ingredients == "S":
-            self.ingredient_capacity = np.max(self.lb * self.demand_end, axis=1)
+            self.ingredient_capacity = np.max(np.dot(self.lb, self.demand_end), axis=1)
         else:
             raise Exception("type_cap_ingredients invalid!")
 
