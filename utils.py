@@ -41,22 +41,27 @@ def print_info(data: DataAbstractClass, status: str) -> None:
         rank = None
         size = None
         name = "localhost"
-    print(
-        f"Instance = {data.instance} Cap = {data.capacity} Produtos {data.amount_of_end_products} {status} Process {rank} of {size} on {name}"
-    )
+    print(f"{str(data)} {status} Process {rank} of {size} on {name}")
 
 
-def add_new_kpi(kpis: Dict[str, any], result, data: DataAbstractClass) -> dict:
+def add_identifiers(kpis, data) -> dict:
     kpis["Instance"] = data.instance
-    kpis["Best Bound"] = result.solve_details.best_bound
-    kpis["Gap"] = result.solve_details.gap
-    kpis["Nodes Processed"] = result.solve_details.nb_nodes_processed
-    kpis["Tempo de Solução"] = result.solve_details.time
     kpis["capacity"] = data.capacity
     kpis["capacity_multiplier"] = data.capacity_multiplier
     kpis["type_cap_ingredients"] = data.type_cap_ingredients
     kpis["ingredient_capacity"] = data.ingredient_capacity
     kpis["amount_of_end_products"] = data.amount_of_end_products
+    kpis["status"] = "infeasible"
+    return kpis
+
+
+def add_new_kpi(kpis: Dict[str, any], result, data: DataAbstractClass) -> dict:
+    kpis = add_identifiers(kpis=kpis, data=data)
+    kpis["Best Bound"] = result.solve_details.best_bound
+    kpis["Gap"] = result.solve_details.gap
+    kpis["Nodes Processed"] = result.solve_details.nb_nodes_processed
+    kpis["Tempo de Solução"] = result.solve_details.time
+    kpis["status"] = "solved"
     return kpis
 
 
@@ -81,6 +86,13 @@ def get_and_save_results(path_to_read: str, path_to_save: Path) -> None:
     )
 
 
+def save_results(kpis: dict, complete_path_to_save: str) -> None:
+    df_results_optimized = pd.DataFrame([kpis])
+    df_results_optimized.to_excel(
+        f"{complete_path_to_save}.xlsx", index=False, engine="openpyxl"
+    )
+
+
 def solve_optimized_model(
     dataset: str,
     Formulacao: FormulacaoType,
@@ -100,8 +112,15 @@ def solve_optimized_model(
     mdl.context.cplex_parameters.threads = 1
     result = mdl.solve()
 
+    suffix_path = str(data)
+    complete_path_to_save = Path.resolve(
+        Path(constants.OTIMIZADOS_INDIVIDUAIS_PATH) / Path(suffix_path)
+    )
+
     if result == None:
         print_info(data, "infactível")
+        kpis = add_identifiers(dict(), data=data)
+        save_results(kpis=kpis, complete_path_to_save=complete_path_to_save)
         return None
 
     produto_periodo = ["produto", "periodo"]
@@ -170,15 +189,7 @@ def solve_optimized_model(
     relaxed_objective_value = relaxed_model.objective_value
     kpis["Relaxed Objective Value"] = relaxed_objective_value
 
-    suffix_path = str(data)
-    complete_path_to_save = Path.resolve(
-        Path(constants.OTIMIZADOS_INDIVIDUAIS_PATH) / Path(suffix_path)
-    )
-
-    df_results_optimized = pd.DataFrame([kpis])
-    df_results_optimized.to_excel(
-        f"{complete_path_to_save}.xlsx", index=False, engine="openpyxl"
-    )
+    save_results(kpis=kpis, complete_path_to_save=complete_path_to_save)
 
     print_info(data, "concluído")
     gc.collect()
