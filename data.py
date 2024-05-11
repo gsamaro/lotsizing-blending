@@ -163,7 +163,7 @@ class DataMultipleProducts(Data):
                     ),
                 )
             ).flatten()
-        elif type_cap_ingredients == "S":
+        elif type_cap_ingredients == "N":
             self.ingredient_capacity = np.max(np.dot(self.lb, self.demand_end), axis=1)
         else:
             raise Exception("type_cap_ingredients invalid!")
