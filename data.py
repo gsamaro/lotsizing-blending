@@ -152,7 +152,7 @@ class DataMultipleProducts(Data):
     def _update_ingredient_capacity(self, type_cap_ingredients: str):
         if type_cap_ingredients == "W":
             self.ingredient_capacity = [np.inf]
-        elif type_cap_ingredients == "L":
+        elif type_cap_ingredients == "N":
             self.ingredient_capacity = np.max(np.dot(self.ub, self.demand_end), axis=1)
         elif type_cap_ingredients == "XL":
             self.ingredient_capacity = (
@@ -163,8 +163,10 @@ class DataMultipleProducts(Data):
                     ),
                 )
             ).flatten()
-        elif type_cap_ingredients == "N":
-            self.ingredient_capacity = np.max(np.dot(self.lb, self.demand_end), axis=1)
+        elif type_cap_ingredients == "S":
+            self.ingredient_capacity = (
+                np.max(np.dot(self.lb, self.demand_end), axis=1) * 0.8
+            )
         else:
             raise Exception("type_cap_ingredients invalid!")
 
