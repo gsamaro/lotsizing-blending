@@ -266,10 +266,10 @@ class Formulacao1:
 
 if __name__ == "__main__":
     data = DataMultipleProducts(
-        "2LLL4.DAT.dat",
+        "2LLL1.DAT.dat",
         capacity_multiplier="L",
-        amount_of_end_products=1,
-        type_cap_ingredients="L",
+        amount_of_end_products=5,
+        type_cap_ingredients="S",
     )
     f1 = Formulacao1(data)
     print(f1.model.export_as_lp_string())
