@@ -54,6 +54,8 @@ def add_new_kpi(kpis: Dict[str, any], result, data: DataAbstractClass) -> dict:
     kpis["Tempo de Solução"] = result.solve_details.time
     kpis["capacity"] = data.capacity
     kpis["capacity_multiplier"] = data.capacity_multiplier
+    kpis["type_cap_ingredients"] = data.type_cap_ingredients
+    kpis["ingredient_capacity"] = data.ingredient_capacity
     kpis["amount_of_end_products"] = data.amount_of_end_products
     return kpis
 
@@ -84,11 +86,13 @@ def solve_optimized_model(
     Formulacao: FormulacaoType,
     amount_of_end_products,
     capacity_multiplier,
+    type_cap_ingredients,
 ):
     data = DataMultipleProducts(
         dataset,
         capacity_multiplier=capacity_multiplier,
         amount_of_end_products=amount_of_end_products,
+        type_cap_ingredients=type_cap_ingredients,
     )
     f1 = Formulacao(data)
     mdl = f1.model
@@ -153,6 +157,8 @@ def solve_optimized_model(
     var_results["amount_of_end_products"] = data.amount_of_end_products
     var_results["instance"] = data.instance
     var_results["capacity_multiplier"] = data.capacity_multiplier
+    var_results["type_cap_ingredients"] = data.type_cap_ingredients
+    var_results["ingredient_capacity"] = data.ingredient_capacity[0]
 
     kpis = mdl.kpis_as_dict(result, objective_key="objective_function")
     kpis = add_new_kpi(kpis, result, data)
@@ -189,10 +195,11 @@ def running_all_instance_with_chosen_capacity(
             futures = executor.starmap(
                 solve_optimized_model,
                 (
-                    (dataset, Formulacao, end_products, capmult)
+                    (dataset, Formulacao, end_products, capmult, type_cap_ingredients)
                     for dataset in constants.INSTANCES
                     for end_products in constants.END_PRODUCTS
                     for capmult in constants.DEFAULT_CAPACITY_MULTIPLIER.keys()
+                    for type_cap_ingredients in constants.CAPACITY_INGREDIENTS
                 ),
             )
             final_results.append(futures)
@@ -202,10 +209,11 @@ def running_all_instance_with_chosen_capacity(
             futures = executor.starmap(
                 solve_optimized_model,
                 (
-                    (dataset, Formulacao, end_products, capmult)
+                    (dataset, Formulacao, end_products, capmult, type_cap_ingredients)
                     for dataset in constants.INSTANCES
                     for end_products in constants.END_PRODUCTS
                     for capmult in constants.DEFAULT_CAPACITY_MULTIPLIER.keys()
+                    for type_cap_ingredients in constants.CAPACITY_INGREDIENTS
                 ),
             )
             final_results.append(futures)
