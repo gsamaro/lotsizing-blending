@@ -117,7 +117,7 @@ class Data(DataAbstractClass):
 class DataMultipleProducts(Data):
 
     def __str__(self):
-        return f"{super().__str__()}_prod_{self.END_PRODUCTS.shape[0]}_capE_{self.capacity_multiplier}_capI_{self.type_cap_ingredients}"
+        return f"{super().__str__()}_prod_{self.END_PRODUCTS.shape[0]}_capE_{self.capacity_multiplier}_capI_{self.type_cap_ingredients}_coefCap_{self.coef_cap}"
 
     def __init__(
         self,
@@ -155,7 +155,9 @@ class DataMultipleProducts(Data):
         if type_cap_ingredients == "W":
             self.ingredient_capacity = [np.inf]
         elif type_cap_ingredients == "N":
-            self.ingredient_capacity = np.mean(np.dot(self.ub, self.demand_end), axis=1)
+            self.ingredient_capacity = (
+                np.mean(np.dot(self.ub, self.demand_end), axis=1) * self.coef_cap
+            )
         elif type_cap_ingredients == "XL":
             self.ingredient_capacity = (
                 np.dot(
@@ -164,9 +166,11 @@ class DataMultipleProducts(Data):
                         (self.amount_of_end_products, 1)
                     ),
                 )
-            ).flatten()
+            ).flatten() * self.coef_cap
         elif type_cap_ingredients == "S":
-            self.ingredient_capacity = np.mean(np.dot(self.lb, self.demand_end), axis=1)
+            self.ingredient_capacity = (
+                np.mean(np.dot(self.lb, self.demand_end), axis=1) * self.coef_cap
+            )
         else:
             raise Exception("type_cap_ingredients invalid!")
 
