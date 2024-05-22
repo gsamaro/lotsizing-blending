@@ -125,10 +125,12 @@ class DataMultipleProducts(Data):
         capacity_multiplier,
         amount_of_end_products: int,
         type_cap_ingredients: str,
+        coef_cap: float,
     ):
         super().__init__(file_to_read, capacity_multiplier)
         self.END_PRODUCTS = np.arange(amount_of_end_products)
         self.type_cap_ingredients = str.upper(type_cap_ingredients)
+        self.coef_cap = coef_cap
         self._update_demand()
         self._define_limits()
         self._update_ingredient_capacity(str.upper(type_cap_ingredients))
@@ -153,7 +155,7 @@ class DataMultipleProducts(Data):
         if type_cap_ingredients == "W":
             self.ingredient_capacity = [np.inf]
         elif type_cap_ingredients == "N":
-            self.ingredient_capacity = np.max(np.dot(self.ub, self.demand_end), axis=1)
+            self.ingredient_capacity = np.mean(np.dot(self.ub, self.demand_end), axis=1)
         elif type_cap_ingredients == "XL":
             self.ingredient_capacity = (
                 np.dot(
@@ -164,9 +166,7 @@ class DataMultipleProducts(Data):
                 )
             ).flatten()
         elif type_cap_ingredients == "S":
-            self.ingredient_capacity = (
-                np.max(np.dot(self.lb, self.demand_end), axis=1) * 0.95
-            )
+            self.ingredient_capacity = np.mean(np.dot(self.lb, self.demand_end), axis=1)
         else:
             raise Exception("type_cap_ingredients invalid!")
 
