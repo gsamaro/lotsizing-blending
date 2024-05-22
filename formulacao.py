@@ -44,6 +44,14 @@ class Formulacao1:
         )
         self.model.add_kpi(self.ingredients_cost(), publish_name="ingredients_cost")
 
+        self.model.add_kpi(
+            self.get_end_product_utilization_capacity(), publish_name="end_product_uc"
+        )
+
+        self.model.add_kpi(
+            self.get_ingredients_utilization_capacity(), publish_name="ingredients_uc"
+        )
+
         self.model.minimize(self.end_products_cost() + self.ingredients_cost())
 
     def build_variables(self):
@@ -262,6 +270,21 @@ class Formulacao1:
             + self.production_cost_ingredients()
             + self.holding_cost_end_ingredients()
         )
+
+    def get_end_product_utilization_capacity(self):
+        return sum(
+            self.setup_end_products[k, t] * self.data.setup_time_end[0]
+            + self.end_products[k, t] * self.data.production_time_end[0]
+            for k in self.data.END_PRODUCTS
+            for t in self.data.PERIODS
+        ) / (self.data.capacity_end[0] * self.data.PERIODS)
+
+    def get_ingredients_utilization_capacity(self):
+        return sum(
+            self.ingredients[i, t]
+            for i in self.data.INGREDIENTS
+            for t in self.data.PERIODS
+        ) / (self.data.ingredient_capacity[0] * self.data.PERIODS)
 
 
 if __name__ == "__main__":
