@@ -48,8 +48,9 @@ def add_identifiers(kpis, data) -> dict:
     kpis["Instance"] = data.instance
     kpis["capacity"] = data.capacity
     kpis["capacity_multiplier"] = data.capacity_multiplier
+    kpis["coef_cap"] = data.coef_cap
     kpis["type_cap_ingredients"] = data.type_cap_ingredients
-    kpis["ingredient_capacity"] = data.ingredient_capacity
+    kpis["ingredient_capacity"] = data.ingredient_capacity[0]
     kpis["amount_of_end_products"] = data.amount_of_end_products
     kpis["status"] = "infeasible"
     return kpis
@@ -99,12 +100,14 @@ def solve_optimized_model(
     amount_of_end_products,
     capacity_multiplier,
     type_cap_ingredients,
+    coef_cap,
 ):
     data = DataMultipleProducts(
         dataset,
         capacity_multiplier=capacity_multiplier,
         amount_of_end_products=amount_of_end_products,
         type_cap_ingredients=type_cap_ingredients,
+        coef_cap=coef_cap,
     )
     f1 = Formulacao(data)
     mdl = f1.model
@@ -206,11 +209,19 @@ def running_all_instance_with_chosen_capacity(
             futures = executor.starmap(
                 solve_optimized_model,
                 (
-                    (dataset, Formulacao, end_products, capmult, type_cap_ingredients)
+                    (
+                        dataset,
+                        Formulacao,
+                        end_products,
+                        capmult,
+                        type_cap_ingredients,
+                        coef_cap,
+                    )
                     for dataset in constants.INSTANCES
                     for end_products in constants.END_PRODUCTS
                     for capmult in constants.DEFAULT_CAPACITY_MULTIPLIER.keys()
                     for type_cap_ingredients in constants.CAPACITY_INGREDIENTS
+                    for coef_cap in constants.COEFICIENTS_CAPACITY
                 ),
             )
             final_results.append(futures)
@@ -220,19 +231,27 @@ def running_all_instance_with_chosen_capacity(
             futures = executor.starmap(
                 solve_optimized_model,
                 (
-                    (dataset, Formulacao, end_products, capmult, type_cap_ingredients)
+                    (
+                        dataset,
+                        Formulacao,
+                        end_products,
+                        capmult,
+                        type_cap_ingredients,
+                        coef_cap,
+                    )
                     for dataset in constants.INSTANCES
                     for end_products in constants.END_PRODUCTS
                     for capmult in constants.DEFAULT_CAPACITY_MULTIPLIER.keys()
                     for type_cap_ingredients in constants.CAPACITY_INGREDIENTS
+                    for coef_cap in constants.COEFICIENTS_CAPACITY
                 ),
             )
             final_results.append(futures)
             executor.shutdown(wait=True)
 
-    pd.concat(final_results[0]).to_excel(
-        Path(Path(constants.FINAL_PATH) / Path("variaveis.xlsx")), engine="openpyxl"
-    )
+    # pd.concat(final_results[0]).to_excel(
+    #     Path(Path(constants.FINAL_PATH) / Path("variaveis.xlsx")), engine="openpyxl"
+    # )
 
     get_and_save_results(
         path_to_read=constants.OTIMIZADOS_INDIVIDUAIS_PATH,
