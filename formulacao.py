@@ -277,21 +277,29 @@ class Formulacao1:
             + self.end_products[k, t] * self.data.production_time_end[0]
             for k in self.data.END_PRODUCTS
             for t in self.data.PERIODS
-        ) / (self.data.capacity_end[0] * len(self.data.PERIODS))
+        ) / (
+            self.data.capacity_end[0]
+            * len(self.data.PERIODS)
+            * len(self.data.INGREDIENTS)
+        )
 
     def get_ingredients_utilization_capacity(self):
         return sum(
             self.ingredients[i, t]
             for i in self.data.INGREDIENTS
             for t in self.data.PERIODS
-        ) / (self.data.ingredient_capacity[0] * len(self.data.PERIODS))
+        ) / (
+            self.data.ingredient_capacity[0]
+            * len(self.data.PERIODS)
+            * len(self.data.INGREDIENTS)
+        )
 
 
 if __name__ == "__main__":
     data = DataMultipleProducts(
         "2LLL1.DAT.dat",
         capacity_multiplier="L",
-        amount_of_end_products=5,
+        amount_of_end_products=1,
         type_cap_ingredients="S",
         coef_cap=1.3,
     )
