@@ -280,7 +280,7 @@ class Formulacao1:
         ) / (
             self.data.capacity_end[0]
             * len(self.data.PERIODS)
-            * len(self.data.INGREDIENTS)
+            * len(self.data.END_PRODUCTS)
         )
 
     def get_ingredients_utilization_capacity(self):
