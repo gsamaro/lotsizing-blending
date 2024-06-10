@@ -4,7 +4,7 @@ from data import Data, DataMultipleProducts, MockData
 
 
 class Formulacao1:
-    def __init__(self, data: Data):
+    def __init__(self, data: DataMultipleProducts):
         self.data = data
         self.model = Model()
         self.build_variables()
@@ -12,6 +12,7 @@ class Formulacao1:
         self.balance_inventory_end_products_constraint()
         self.setup_end_products_constraint()
         self.capacity_end_products_constraint()
+        self.capacity_ingredients_constraint()
         self.balance_inventory_ingredients_constraint()
         self.setup_ingredients_constraint()
         self.upper_ingredients_constraint()
@@ -42,6 +43,14 @@ class Formulacao1:
             publish_name="holding_cost_end_ingredients",
         )
         self.model.add_kpi(self.ingredients_cost(), publish_name="ingredients_cost")
+
+        self.model.add_kpi(
+            self.get_end_product_utilization_capacity(), publish_name="end_product_uc"
+        )
+
+        self.model.add_kpi(
+            self.get_ingredients_utilization_capacity(), publish_name="ingredients_uc"
+        )
 
         self.model.minimize(self.end_products_cost() + self.ingredients_cost())
 
@@ -132,6 +141,15 @@ class Formulacao1:
             + self.data.production_time_end[0] * self.end_products[k, t]
             <= self.data.capacity_end[0]
             for k in self.data.END_PRODUCTS
+            for t in self.data.PERIODS
+        )
+
+    def capacity_ingredients_constraint(self):
+        # todo: add tempo setup ingrediente
+        # todo: add tempo producao ingrediente
+        self.model.add_constraints(
+            self.ingredients[i, t] <= self.data.ingredient_capacity[0]
+            for i in self.data.INGREDIENTS
             for t in self.data.PERIODS
         )
 
@@ -253,10 +271,37 @@ class Formulacao1:
             + self.holding_cost_end_ingredients()
         )
 
+    def get_end_product_utilization_capacity(self):
+        return sum(
+            self.setup_end_products[k, t] * self.data.setup_time_end[0]
+            + self.end_products[k, t] * self.data.production_time_end[0]
+            for k in self.data.END_PRODUCTS
+            for t in self.data.PERIODS
+        ) / (
+            self.data.capacity_end[0]
+            * len(self.data.PERIODS)
+            * len(self.data.END_PRODUCTS)
+        )
+
+    def get_ingredients_utilization_capacity(self):
+        return sum(
+            self.ingredients[i, t]
+            for i in self.data.INGREDIENTS
+            for t in self.data.PERIODS
+        ) / (
+            self.data.ingredient_capacity[0]
+            * len(self.data.PERIODS)
+            * len(self.data.INGREDIENTS)
+        )
+
 
 if __name__ == "__main__":
     data = DataMultipleProducts(
-        "2LLL4.DAT.dat", capacity_multiplier="L", amount_of_end_products=4
+        "2LLL1.DAT.dat",
+        capacity_multiplier="L",
+        amount_of_end_products=1,
+        type_cap_ingredients="S",
+        coef_cap=1.3,
     )
     f1 = Formulacao1(data)
     print(f1.model.export_as_lp_string())

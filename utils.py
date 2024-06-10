@@ -41,20 +41,28 @@ def print_info(data: DataAbstractClass, status: str) -> None:
         rank = None
         size = None
         name = "localhost"
-    print(
-        f"Instance = {data.instance} Cap = {data.capacity} Produtos {data.amount_of_end_products} {status} Process {rank} of {size} on {name}"
-    )
+    print(f"{str(data)} {status} Process {rank} of {size} on {name}")
+
+
+def add_identifiers(kpis, data) -> dict:
+    kpis["Instance"] = data.instance
+    kpis["capacity"] = data.capacity
+    kpis["capacity_multiplier"] = data.capacity_multiplier
+    kpis["coef_cap"] = data.coef_cap
+    kpis["type_cap_ingredients"] = data.type_cap_ingredients
+    kpis["ingredient_capacity"] = data.ingredient_capacity[0]
+    kpis["amount_of_end_products"] = data.amount_of_end_products
+    kpis["status"] = "infeasible"
+    return kpis
 
 
 def add_new_kpi(kpis: Dict[str, any], result, data: DataAbstractClass) -> dict:
-    kpis["Instance"] = data.instance
+    kpis = add_identifiers(kpis=kpis, data=data)
     kpis["Best Bound"] = result.solve_details.best_bound
     kpis["Gap"] = result.solve_details.gap
-    kpis["Nodes Processed"] = result.solve_details.gap
+    kpis["Nodes Processed"] = result.solve_details.nb_nodes_processed
     kpis["Tempo de Solução"] = result.solve_details.time
-    kpis["capacity"] = data.capacity
-    kpis["capacity_multiplier"] = data.capacity_multiplier
-    kpis["amount_of_end_products"] = data.amount_of_end_products
+    kpis["status"] = "solved"
     return kpis
 
 
@@ -79,16 +87,27 @@ def get_and_save_results(path_to_read: str, path_to_save: Path) -> None:
     )
 
 
+def save_results(kpis: dict, complete_path_to_save: str) -> None:
+    df_results_optimized = pd.DataFrame([kpis])
+    df_results_optimized.to_excel(
+        f"{complete_path_to_save}.xlsx", index=False, engine="openpyxl"
+    )
+
+
 def solve_optimized_model(
     dataset: str,
     Formulacao: FormulacaoType,
     amount_of_end_products,
     capacity_multiplier,
+    type_cap_ingredients,
+    coef_cap,
 ):
     data = DataMultipleProducts(
         dataset,
         capacity_multiplier=capacity_multiplier,
         amount_of_end_products=amount_of_end_products,
+        type_cap_ingredients=type_cap_ingredients,
+        coef_cap=coef_cap,
     )
     f1 = Formulacao(data)
     mdl = f1.model
@@ -96,8 +115,15 @@ def solve_optimized_model(
     mdl.context.cplex_parameters.threads = 1
     result = mdl.solve()
 
+    suffix_path = str(data)
+    complete_path_to_save = Path.resolve(
+        Path(constants.OTIMIZADOS_INDIVIDUAIS_PATH) / Path(suffix_path)
+    )
+
     if result == None:
         print_info(data, "infactível")
+        kpis = add_identifiers(dict(), data=data)
+        save_results(kpis=kpis, complete_path_to_save=complete_path_to_save)
         return None
 
     produto_periodo = ["produto", "periodo"]
@@ -153,6 +179,8 @@ def solve_optimized_model(
     var_results["amount_of_end_products"] = data.amount_of_end_products
     var_results["instance"] = data.instance
     var_results["capacity_multiplier"] = data.capacity_multiplier
+    var_results["type_cap_ingredients"] = data.type_cap_ingredients
+    var_results["ingredient_capacity"] = data.ingredient_capacity[0]
 
     kpis = mdl.kpis_as_dict(result, objective_key="objective_function")
     kpis = add_new_kpi(kpis, result, data)
@@ -164,15 +192,7 @@ def solve_optimized_model(
     relaxed_objective_value = relaxed_model.objective_value
     kpis["Relaxed Objective Value"] = relaxed_objective_value
 
-    suffix_path = str(data)
-    complete_path_to_save = Path.resolve(
-        Path(constants.OTIMIZADOS_INDIVIDUAIS_PATH) / Path(suffix_path)
-    )
-
-    df_results_optimized = pd.DataFrame([kpis])
-    df_results_optimized.to_excel(
-        f"{complete_path_to_save}.xlsx", index=False, engine="openpyxl"
-    )
+    save_results(kpis=kpis, complete_path_to_save=complete_path_to_save)
 
     print_info(data, "concluído")
     gc.collect()
@@ -189,10 +209,19 @@ def running_all_instance_with_chosen_capacity(
             futures = executor.starmap(
                 solve_optimized_model,
                 (
-                    (dataset, Formulacao, end_products, capmult)
+                    (
+                        dataset,
+                        Formulacao,
+                        end_products,
+                        capmult,
+                        type_cap_ingredients,
+                        coef_cap,
+                    )
                     for dataset in constants.INSTANCES
                     for end_products in constants.END_PRODUCTS
                     for capmult in constants.DEFAULT_CAPACITY_MULTIPLIER.keys()
+                    for type_cap_ingredients in constants.CAPACITY_INGREDIENTS
+                    for coef_cap in constants.COEFICIENTS_CAPACITY
                 ),
             )
             final_results.append(futures)
@@ -202,18 +231,27 @@ def running_all_instance_with_chosen_capacity(
             futures = executor.starmap(
                 solve_optimized_model,
                 (
-                    (dataset, Formulacao, end_products, capmult)
+                    (
+                        dataset,
+                        Formulacao,
+                        end_products,
+                        capmult,
+                        type_cap_ingredients,
+                        coef_cap,
+                    )
                     for dataset in constants.INSTANCES
                     for end_products in constants.END_PRODUCTS
                     for capmult in constants.DEFAULT_CAPACITY_MULTIPLIER.keys()
+                    for type_cap_ingredients in constants.CAPACITY_INGREDIENTS
+                    for coef_cap in constants.COEFICIENTS_CAPACITY
                 ),
             )
             final_results.append(futures)
             executor.shutdown(wait=True)
 
-    pd.concat(final_results[0]).to_excel(
-        Path(Path(constants.FINAL_PATH) / Path("variaveis.xlsx")), engine="openpyxl"
-    )
+    # pd.concat(final_results[0]).to_excel(
+    #     Path(Path(constants.FINAL_PATH) / Path("variaveis.xlsx")), engine="openpyxl"
+    # )
 
     get_and_save_results(
         path_to_read=constants.OTIMIZADOS_INDIVIDUAIS_PATH,
