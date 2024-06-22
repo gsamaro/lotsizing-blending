@@ -58,6 +58,7 @@ class Formulacao1:
         self._build_end_products_var()
         self._build_setup_end_products_var()
         self._build_inventory_end_products_var()
+        self._build_backlogged_end_products_var()
         self._build_ingredient_proportion_var()
         self._build_ingredients_var()
         self._build_setup_ingredients_var()
@@ -82,6 +83,13 @@ class Formulacao1:
             self.data.END_PRODUCTS.shape[0],
             self.data.PERIODS.shape[0],
             name="sE",
+        )
+
+    def _build_backlogged_end_products_var(self):
+        self.backlogged_end_products = self.model.continuous_var_matrix(
+            self.data.END_PRODUCTS.shape[0],
+            self.data.PERIODS.shape[0],
+            name="bE",
         )
 
     def _build_ingredient_proportion_var(self):
@@ -115,14 +123,18 @@ class Formulacao1:
 
     def balance_inventory_end_products_constraint(self):
         self.model.add_constraints(
-            self.end_products[k, 0]
+            self.end_products[k, 0] + self.backlogged_end_products[k, 0]
             == self.data.demand_end[k, 0] + self.inventory_end_products[k, 0]
             for k in self.data.END_PRODUCTS
         )
 
         self.model.add_constraints(
-            self.inventory_end_products[k, t - 1] + self.end_products[k, t]
-            == self.data.demand_end[k, t] + self.inventory_end_products[k, t]
+            self.inventory_end_products[k, t - 1]
+            + self.end_products[k, t]
+            + self.backlogged_end_products[k, t]
+            == self.data.demand_end[k, t]
+            + self.backlogged_end_products[k, t - 1]
+            + self.inventory_end_products[k, t]
             for k in self.data.END_PRODUCTS
             for t in self.data.PERIODS[self.data.PERIODS > 0]
         )
@@ -269,6 +281,18 @@ class Formulacao1:
             self.setup_cost_ingredients()
             + self.production_cost_ingredients()
             + self.holding_cost_end_ingredients()
+            + self.backlogged_end_products_cost()
+        )
+
+    def backlogged_end_products_cost(self):
+        return (
+            100
+            * self.data.holding_cost_end[0]
+            * self.model.sum(
+                self.backlogged_end_products[k, t]
+                for k in self.data.END_PRODUCTS
+                for t in self.data.PERIODS
+            )
         )
 
     def get_end_product_utilization_capacity(self):
@@ -297,14 +321,16 @@ class Formulacao1:
 
 if __name__ == "__main__":
     data = DataMultipleProducts(
-        "2LLL1.DAT.dat",
+        "10LLL5.DAT.dat",
         capacity_multiplier="L",
-        amount_of_end_products=1,
+        amount_of_end_products=5,
         type_cap_ingredients="S",
-        coef_cap=1.3,
+        coef_cap=1.1,
     )
     f1 = Formulacao1(data)
-    print(f1.model.export_as_lp_string())
-    f1.model.set_time_limit(10)
+    # print(f1.model.export_as_lp_string())
+    f1.model.set_time_limit(180)
     solution = f1.model.solve()
     f1.model.print_solution()
+    print(f1.model.solve_status)
+    pass
