@@ -11,4 +11,4 @@ INSTANCES = [f"{i}LLL{j}.DAT.dat" for i in [2, 5, 10] for j in range(1, 11)] + [
     f"{i}HHH{j}.DAT.dat" for i in [2, 5, 10] for j in range(1, 11)
 ]
 COEFICIENTS_CAPACITY = [2, 1.3]
-COEFICIENTS_CAPACITY = [2, 1.9, 1.8, 1.7, 1.6, 1.5, 1.4, 1.3, 1.2, 1.1]
+COEFICIENTS_CAPACITY = [1.7, 1.4, 1.3, 1.1, 1.05, 1.03, 1.005, 1]
