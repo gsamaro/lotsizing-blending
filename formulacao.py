@@ -160,10 +160,12 @@ class Formulacao1:
 
     def capacity_end_products_constraint(self):
         self.model.add_constraints(
-            self.data.setup_time_end[0] * self.setup_end_products[k, t]
-            + self.data.production_time_end[0] * self.end_products[k, t]
+            self.model.sum(
+                self.data.setup_time_end[0] * self.setup_end_products[k, t]
+                + self.data.production_time_end[0] * self.end_products[k, t]
+                for k in self.data.END_PRODUCTS
+            )
             <= self.data.capacity_end[0]
-            for k in self.data.END_PRODUCTS
             for t in self.data.PERIODS
         )
 
@@ -312,11 +314,7 @@ class Formulacao1:
             + self.end_products[k, t] * self.data.production_time_end[0]
             for k in self.data.END_PRODUCTS
             for t in self.data.PERIODS
-        ) / (
-            self.data.capacity_end[0]
-            * len(self.data.PERIODS)
-            * len(self.data.END_PRODUCTS)
-        )
+        ) / (self.data.capacity_end[0] * len(self.data.PERIODS))
 
     def get_ingredients_utilization_capacity(self):
         return sum(
