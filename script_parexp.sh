@@ -1,8 +1,8 @@
 #PBS -N main
-#PBS -q paralela
-#PBS -l nodes=2:ppn=128
-#PBS -e outputs/erros_paralela
-#PBS -o outputs/saidas_paralela
+#PBS -q parexp
+#PBS -l nodes=3:ppn=48
+#PBS -e outputs/erros_parexp
+#PBS -o outputs/saidas_parexp
 #PBS -m abe
 #PBS -M g229780@dac.unicamp.br
 
