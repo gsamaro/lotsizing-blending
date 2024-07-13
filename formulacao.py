@@ -1,6 +1,7 @@
 from docplex.mp.model import Model
 
 from data import Data, DataMultipleProducts, MockData
+from utils import extract_variables
 
 
 class Formulacao1:
@@ -43,6 +44,16 @@ class Formulacao1:
             publish_name="holding_cost_end_ingredients",
         )
         self.model.add_kpi(self.ingredients_cost(), publish_name="ingredients_cost")
+
+        self.model.add_kpi(
+            self.backlogged_end_products_cost(),
+            publish_name="backlogged_end_products_cost",
+        )
+
+        self.model.add_kpi(
+            self.total_backlogged_end_products(),
+            publish_name="total_backlogged_end_products",
+        )
 
         self.model.add_kpi(
             self.get_end_product_utilization_capacity(), publish_name="end_product_uc"
@@ -287,7 +298,7 @@ class Formulacao1:
     def backlogged_end_products_cost(self):
         return (
             100
-            * self.data.holding_cost_end[0]
+            * max(self.data.holding_cost_end[0], self.data.setup_cost_end[0])
             * self.model.sum(
                 self.backlogged_end_products[k, t]
                 for k in self.data.END_PRODUCTS
@@ -318,6 +329,13 @@ class Formulacao1:
             * len(self.data.INGREDIENTS)
         )
 
+    def total_backlogged_end_products(self):
+        return self.model.sum(
+            self.backlogged_end_products[k, t]
+            for k in self.data.END_PRODUCTS
+            for t in self.data.PERIODS
+        )
+
 
 if __name__ == "__main__":
     data = DataMultipleProducts(
@@ -333,4 +351,16 @@ if __name__ == "__main__":
     solution = f1.model.solve()
     f1.model.print_solution()
     print(f1.model.solve_status)
+
+    produto_periodo = ["produto", "periodo"]
+    ingrediente_produto_periodo = ["ingrediente"] + produto_periodo
+    ingrediente_periodo = ["ingrediente", "periodo"]
+
+    var_results = extract_variables(
+        f1.model,
+        f1,
+        produto_periodo=produto_periodo,
+        ingrediente_produto_periodo=ingrediente_produto_periodo,
+        ingrediente_periodo=ingrediente_periodo,
+    )
     pass
