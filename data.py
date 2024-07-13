@@ -69,7 +69,7 @@ class Data(DataAbstractClass):
             * DEFAULT_CAPACITY_MULTIPLIER[capacity_multiplier]
         )
         self.capacity_multiplier = capacity_multiplier
-        self.capacity = self.capacity_end[0]
+        self.capacity = self.capacity_end[0] * self.amount_of_end_products
         inicio, fim = fim, fim + self.END_PRODUCTS.shape[0]
         self.production_time_end = np.array(
             df.iloc[inicio:fim, 0].astype(float),
