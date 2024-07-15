@@ -227,5 +227,6 @@ if __name__ == "__main__":
         amount_of_end_products=2,
         type_cap_ingredients="W",
         capacity_multiplier="L",
+        coef_cap=1,
     )
     pass
