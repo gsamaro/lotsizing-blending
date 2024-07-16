@@ -131,9 +131,13 @@ class DataMultipleProducts(Data):
         self.END_PRODUCTS = np.arange(amount_of_end_products)
         self.type_cap_ingredients = str.upper(type_cap_ingredients)
         self.coef_cap = coef_cap
+        self._update_end_products_capacity()
         self._update_demand()
         self._define_limits()
         self._update_ingredient_capacity(str.upper(type_cap_ingredients))
+
+    def _update_end_products_capacity(self):
+        self.capacity = self._capacity_end[0] * self.END_PRODUCTS.shape[0]
 
     def _update_demand(self):
         self._original_demand_end = self.demand_end
