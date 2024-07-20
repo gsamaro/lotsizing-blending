@@ -1,7 +1,7 @@
+import itertools
 import os
 import re
 import types
-from itertools import chain
 from multiprocessing import Pool
 from pathlib import Path
 from typing import Dict, List
@@ -157,8 +157,8 @@ def save_results(kpis: dict, complete_path_to_save: str) -> None:
 
 
 def solve_optimized_model(
-    dataset: str,
     Formulacao: FormulacaoType,
+    dataset: str,
     amount_of_end_products,
     capacity_multiplier,
     type_cap_ingredients,
@@ -231,22 +231,7 @@ def running_all_instance_with_chosen_capacity(
     if not MPI_BOOL:
         with Pool() as executor:
             futures = executor.starmap(
-                solve_optimized_model,
-                (
-                    (
-                        dataset,
-                        Formulacao,
-                        end_products,
-                        capmult,
-                        type_cap_ingredients,
-                        coef_cap,
-                    )
-                    for dataset in constants.INSTANCES
-                    for end_products in constants.END_PRODUCTS
-                    for capmult in constants.DEFAULT_CAPACITY_MULTIPLIER.keys()
-                    for type_cap_ingredients in constants.CAPACITY_INGREDIENTS
-                    for coef_cap in constants.COEFICIENTS_CAPACITY
-                ),
+                solve_optimized_model, ((Formulacao,) + x for x in constants.ITERATOR)
             )
             final_results.append(futures)
 
@@ -254,21 +239,7 @@ def running_all_instance_with_chosen_capacity(
         with MPIPoolExecutor() as executor:
             futures = executor.starmap(
                 solve_optimized_model,
-                (
-                    (
-                        dataset,
-                        Formulacao,
-                        end_products,
-                        capmult,
-                        type_cap_ingredients,
-                        coef_cap,
-                    )
-                    for dataset in constants.INSTANCES
-                    for end_products in constants.END_PRODUCTS
-                    for capmult in constants.DEFAULT_CAPACITY_MULTIPLIER.keys()
-                    for type_cap_ingredients in constants.CAPACITY_INGREDIENTS
-                    for coef_cap in constants.COEFICIENTS_CAPACITY
-                ),
+                ((Formulacao,) + x for x in constants.ITERATOR),
             )
             final_results.append(futures)
             executor.shutdown(wait=True)
