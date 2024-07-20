@@ -36,7 +36,7 @@ class Data(DataAbstractClass):
     production_cost_end: ndarray
     production_time_end: ndarray
     setup_time_end: ndarray
-    capacity_end: ndarray
+    _capacity_end: ndarray
     holding_cost_ingredient: ndarray
     setup_cost_ingredient: ndarray
     production_cost_ingredient: ndarray
@@ -64,12 +64,12 @@ class Data(DataAbstractClass):
         self.PERIODS = np.arange(int(df.iloc[0, 2]))
         inicio = 1
         fim = inicio + 1
-        self.capacity_end = (
+        self._capacity_end = (
             np.array(df.iloc[inicio:fim, 0].astype(float), dtype=int)
             * DEFAULT_CAPACITY_MULTIPLIER[capacity_multiplier]
         )
         self.capacity_multiplier = capacity_multiplier
-        self.capacity = self.capacity_end[0]
+        self.capacity = self._capacity_end[0] * self.amount_of_end_products
         inicio, fim = fim, fim + self.END_PRODUCTS.shape[0]
         self.production_time_end = np.array(
             df.iloc[inicio:fim, 0].astype(float),
@@ -131,9 +131,13 @@ class DataMultipleProducts(Data):
         self.END_PRODUCTS = np.arange(amount_of_end_products)
         self.type_cap_ingredients = str.upper(type_cap_ingredients)
         self.coef_cap = coef_cap
+        self._update_end_products_capacity()
         self._update_demand()
         self._define_limits()
         self._update_ingredient_capacity(str.upper(type_cap_ingredients))
+
+    def _update_end_products_capacity(self):
+        self.capacity = self._capacity_end[0] * self.END_PRODUCTS.shape[0]
 
     def _update_demand(self):
         self._original_demand_end = self.demand_end
@@ -207,7 +211,7 @@ class MockData(Data):
         self.setup_time_end = np.full(
             shape=(self.END_PRODUCTS.shape[0], self.PERIODS.shape[0]), fill_value=1
         )
-        self.capacity_end = np.full(
+        self._capacity_end = np.full(
             shape=(self.END_PRODUCTS.shape[0], self.PERIODS.shape[0]), fill_value=10
         )
         self.holding_cost_ingredient = np.full(
@@ -227,5 +231,6 @@ if __name__ == "__main__":
         amount_of_end_products=2,
         type_cap_ingredients="W",
         capacity_multiplier="L",
+        coef_cap=1,
     )
     pass
