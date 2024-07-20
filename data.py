@@ -44,12 +44,12 @@ class Data(DataAbstractClass):
     instance: str
     capacity: int
     amount_of_end_products: int
-    capacity_multiplier: str
+    capacity_multiplier: float
 
     def __str__(self):
         return f"{self.instance}"
 
-    def __init__(self, file_to_read: str, capacity_multiplier="N"):
+    def __init__(self, file_to_read: str, capacity_multiplier=1):
         df = ReadData(file_to_read).get_df()
         self.file_to_read = file_to_read
         self.instance = self.file_to_read.split(".")[0]
@@ -66,7 +66,7 @@ class Data(DataAbstractClass):
         fim = inicio + 1
         self._capacity_end = (
             np.array(df.iloc[inicio:fim, 0].astype(float), dtype=int)
-            * DEFAULT_CAPACITY_MULTIPLIER[capacity_multiplier]
+            * capacity_multiplier
         )
         self.capacity_multiplier = capacity_multiplier
         self.capacity = self._capacity_end[0] * self.amount_of_end_products
