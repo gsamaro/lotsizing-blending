@@ -338,14 +338,15 @@ class Formulacao1:
 if __name__ == "__main__":
     data = DataMultipleProducts(
         "10LLL5.DAT.dat",
-        capacity_multiplier="L",
+        capacity_multiplier=1.1,
         amount_of_end_products=5,
         type_cap_ingredients="S",
         coef_cap=1.1,
+        random_demand=True,
     )
     f1 = Formulacao1(data)
     # print(f1.model.export_as_lp_string())
-    f1.model.set_time_limit(180)
+    f1.model.set_time_limit(30)
     solution = f1.model.solve()
     f1.model.print_solution()
     print(f1.model.solve_status)
