@@ -126,11 +126,13 @@ class DataMultipleProducts(Data):
         amount_of_end_products: int,
         type_cap_ingredients: str,
         coef_cap: float,
+        random_demand: bool = True,
     ):
         super().__init__(file_to_read, capacity_multiplier)
         self.END_PRODUCTS = np.arange(amount_of_end_products)
         self.type_cap_ingredients = str.upper(type_cap_ingredients)
         self.coef_cap = coef_cap
+        self._random_demand = random_demand
         self._update_end_products_capacity()
         self._update_demand()
         self._define_limits()
@@ -141,9 +143,20 @@ class DataMultipleProducts(Data):
 
     def _update_demand(self):
         self._original_demand_end = self.demand_end
-        self.demand_end = np.repeat(
-            self._original_demand_end[:, np.newaxis], self.END_PRODUCTS.shape[0], axis=1
-        ).T
+        if self.END_PRODUCTS.shape[0] == 1 or not self._random_demand:
+            self.demand_end = np.repeat(
+                self._original_demand_end[:, np.newaxis],
+                self.END_PRODUCTS.shape[0],
+                axis=1,
+            ).T
+        elif self._random_demand and self.END_PRODUCTS.shape[0] > 1:
+            self.demand_end = np.random.uniform(
+                low=500,
+                high=1500,
+                size=(self.END_PRODUCTS.shape[0], self.PERIODS.shape[0]),
+            )
+        else:
+            raise Exception("Invalid parameters to random demand.")
         self._original_sum_demanda_product = self.sum_demand_end
         sum_demand_product = []
         for k in self.END_PRODUCTS:
@@ -230,7 +243,8 @@ if __name__ == "__main__":
         "2HHH1.DAT.dat",
         amount_of_end_products=2,
         type_cap_ingredients="W",
-        capacity_multiplier="L",
+        capacity_multiplier=1.1,
         coef_cap=1,
+        random_demand=False,
     )
     pass

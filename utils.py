@@ -163,6 +163,7 @@ def solve_optimized_model(
     capacity_multiplier,
     type_cap_ingredients,
     coef_cap,
+    random_demand,
 ):
     data = DataMultipleProducts(
         dataset,
@@ -170,6 +171,7 @@ def solve_optimized_model(
         amount_of_end_products=amount_of_end_products,
         type_cap_ingredients=type_cap_ingredients,
         coef_cap=coef_cap,
+        random_demand=random_demand,
     )
     f1 = Formulacao(data)
     mdl = f1.model
